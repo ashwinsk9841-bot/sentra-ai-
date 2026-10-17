@@ -479,3 +479,13 @@ from public.devices d;
 -- update public.document_chunks
 --    set embedding_vector = embedding::vector
 --  where embedding is not null;
+
+-- =============================================================================
+-- Reload the PostgREST schema cache
+-- =============================================================================
+-- Supabase usually reloads automatically after DDL run from the SQL Editor, but
+-- issuing this makes the tables immediately visible to the REST API when the
+-- script is applied via psql or a pooled connection. It removes the transient
+-- PGRST205 error ("Could not find the table 'public.devices' in the schema
+-- cache") that can otherwise appear until the cache refreshes.
+notify pgrst, 'reload schema';
