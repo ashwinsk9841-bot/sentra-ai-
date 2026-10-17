@@ -73,17 +73,20 @@ class SupabaseRepository(SentinelRepository):
     def client(self) -> Any:
         if self._client is None:
             try:
-                from supabase import create_client
+                from supabase import ClientOptions, create_client
             except ImportError as exc:  # pragma: no cover - dependency missing
                 raise ConfigurationError(
                     "The 'supabase' package is not installed.",
                     hint="Run: pip install supabase",
                 ) from exc
             try:
+                # supabase-py >= 2.31 expects a ClientOptions object, not a
+                # dict: create_client() reads options.headers internally, so a
+                # plain dict raises "'dict' object has no attribute 'headers'".
                 self._client = create_client(
                     self.url,
                     self._service_key or self._client_key,
-                    options={"schema": self.schema},
+                    options=ClientOptions(schema=self.schema),
                 )
             except Exception as exc:
                 raise DatabaseError(f"Could not create Supabase client: {exc}") from exc
